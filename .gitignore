@@ -1,0 +1,74 @@
+# ─── Python ───────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+htmlcov/
+.coverage
+*.cover
+
+# ─── Virtual Environments ─────────────────────────────
+venv/
+.venv/
+env/
+.env
+
+# ─── Node.js / Frontend ──────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.env.local
+.DS_Store
+*.log
+npm-debug.log*
+
+# ─── ML Models (auto-generated, large files) ─────────
+backend/ml/models/*.joblib
+backend/ml/models/.model_v2
+
+# ─── Database (auto-created at runtime) ──────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── IDE / Editor ────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ─── OS Files ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ─── Agent Config (AG Kit / Gemini) ──────────────────
+.agent/
+.gemini/
+.planning/
+
+# ─── Deployment Artifacts ────────────────────────────
+deployment_package/
+phishguard-deploy.zip
+
+# ─── Secrets / Environment ──────────────────────────
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# ─── Misc ────────────────────────────────────────────
+*.bak
+*.tmp
+*.temp
+extract_docx.ps1
+PRD_content.txt
+SIH_PRD_PhishingDetection_v2.docx

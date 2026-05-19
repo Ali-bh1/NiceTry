@@ -1,0 +1,24 @@
+# ─── PhishGuard Routing ───
+# Serves React SPA for all non-API routes, lets Passenger handle /api/*
+
+RewriteEngine On
+
+# API routes → Python/Passenger
+RewriteCond %{REQUEST_URI} ^/api/ [NC]
+RewriteRule .* - [L]
+
+# Swagger/OpenAPI docs → Python/Passenger
+RewriteCond %{REQUEST_URI} ^/docs [NC]
+RewriteRule .* - [L]
+RewriteCond %{REQUEST_URI} ^/redoc [NC]
+RewriteRule .* - [L]
+RewriteCond %{REQUEST_URI} ^/openapi.json [NC]
+RewriteRule .* - [L]
+
+# Existing files/directories → serve directly (JS, CSS, images)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule .* - [L]
+
+# Everything else → React SPA (client-side routing)
+RewriteRule .* /index.html [L]
