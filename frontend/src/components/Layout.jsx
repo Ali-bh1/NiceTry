@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import {
   Shield, Search, Share2, Flag, Menu, X,
-  Activity, ChevronRight,
+  Activity, ChevronRight, Users,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/scan', icon: Search, label: 'URL Scanner' },
   { to: '/graph', icon: Share2, label: 'Threat Graph' },
   { to: '/reports', icon: Flag, label: 'Reports' },
+  { to: '/about', icon: Users, label: 'About' },
 ];
 
 export default function Layout() {
@@ -38,7 +39,7 @@ export default function Layout() {
             <Shield size={22} className="text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold" style={{ color: 'var(--color-text-primary)' }}>PhishGuard</h1>
+            <h1 className="text-base font-bold" style={{ color: 'var(--color-text-primary)' }}>NiceTry</h1>
             <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Detect · Explain · Protect</p>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden" style={{ color: 'var(--color-text-muted)' }}>

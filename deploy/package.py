@@ -1,5 +1,5 @@
 """
-Deployment Package Script — PhishGuard
+Deployment Package Script — NiceTry
 
 Creates a clean deployment ZIP containing:
   1. backend/ — All Python files + requirements (no cache/tests/db)
@@ -88,7 +88,7 @@ def package_deploy_configs():
 
 def create_zip():
     """Create a ZIP archive of the deployment package."""
-    zip_path = PROJECT_ROOT / "phishguard-deploy"
+    zip_path = PROJECT_ROOT / "nicetry-deploy"
     shutil.make_archive(str(zip_path), "zip", str(DIST_DIR))
     print(f"\n📦 Deployment ZIP created: {zip_path}.zip")
     return f"{zip_path}.zip"
@@ -96,7 +96,7 @@ def create_zip():
 
 def main():
     print("=" * 50)
-    print("  PhishGuard — Deployment Packager")
+    print("  NiceTry — Deployment Packager")
     print("=" * 50)
     print()
 
@@ -125,9 +125,9 @@ def main():
     print("=" * 50)
     print()
     print("Upload instructions:")
-    print(f"  1. Upload backend/ contents → ~/phishguard/ on server")
+    print(f"  1. Upload backend/ contents → ~/nicetry/ on server")
     print(f"  2. Upload public_html/ contents → ~/public_html/ on server")
-    print(f"  3. Copy deploy-configs/.env.production → ~/phishguard/.env")
+    print(f"  3. Copy deploy-configs/.env.production → ~/nicetry/.env")
     print(f"  4. Edit .env and replace 'yourdomain.com' with your domain")
     print(f"  5. Update extension/background.js API_BASE with your domain")
     print()

@@ -38,4 +38,7 @@ export const api = {
   },
 
   getHealth: () => request('/health'),
+
+  clearThreatGraph: () =>
+    request('/threat-graph', { method: 'DELETE' }),
 };

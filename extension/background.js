@@ -1,5 +1,5 @@
 /**
- * PhishGuard — Background Service Worker
+ * NiceTry — Background Service Worker
  * 
  * Responsibilities:
  *  1. Intercept navigation events and check URLs against the backend API
@@ -30,7 +30,7 @@ async function loadCache() {
       }
     }
   } catch (err) {
-    console.warn('[PhishGuard] Cache load error:', err);
+    console.warn('[NiceTry] Cache load error:', err);
   }
 }
 
@@ -39,7 +39,7 @@ async function saveCache() {
     const entries = Array.from(urlCache.entries());
     await chrome.storage.local.set({ urlCache: JSON.stringify(entries) });
   } catch (err) {
-    console.warn('[PhishGuard] Cache save error:', err);
+    console.warn('[NiceTry] Cache save error:', err);
   }
 }
 
@@ -67,7 +67,7 @@ function updateBadge(tabId, result) {
   chrome.action.setBadgeBackgroundColor({ color, tabId });
   chrome.action.setBadgeText({ text, tabId });
   chrome.action.setTitle({
-    title: `PhishGuard — Risk: ${score}/100 (${result.verdict})`,
+    title: `NiceTry — Risk: ${score}/100 (${result.verdict})`,
     tabId,
   });
 }
@@ -99,7 +99,7 @@ async function analyzeUrl(url) {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      console.warn(`[PhishGuard] API returned ${response.status} for ${url}`);
+      console.warn(`[NiceTry] API returned ${response.status} for ${url}`);
       return null;
     }
 
@@ -112,9 +112,9 @@ async function analyzeUrl(url) {
     return result;
   } catch (err) {
     if (err.name === 'AbortError') {
-      console.warn(`[PhishGuard] Analysis timed out for ${url}`);
+      console.warn(`[NiceTry] Analysis timed out for ${url}`);
     } else {
-      console.error(`[PhishGuard] Analysis failed for ${url}:`, err.message);
+      console.error(`[NiceTry] Analysis failed for ${url}:`, err.message);
     }
     return null;
   }
@@ -140,19 +140,19 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
   if (result.risk_score >= RISK_THRESHOLDS.HIGH) {
     try {
       await chrome.tabs.sendMessage(details.tabId, {
-        type: 'PHISHGUARD_WARNING',
+        type: 'NICETRY_WARNING',
         data: result,
       });
     } catch (err) {
       // Content script may not be ready yet, that's OK
-      console.debug('[PhishGuard] Could not send warning to content script:', err.message);
+      console.debug('[NiceTry] Could not send warning to content script:', err.message);
     }
 
     // Also show a Chrome notification
     chrome.notifications.create(`phish-${details.tabId}`, {
       type: 'basic',
       iconUrl: 'icons/icon-128.png',
-      title: '⚠️ Phishing Warning — PhishGuard',
+      title: '⚠️ Phishing Warning — NiceTry',
       message: `${result.domain} has a risk score of ${result.risk_score}/100. ${result.verdict === 'phishing' ? 'This site appears to be phishing!' : 'This site looks suspicious.'}`,
       priority: 2,
     });
@@ -194,4 +194,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // ─── Init ─────────────────────────────────────────────────
 loadCache();
-console.log('[PhishGuard] Service worker initialized');
+console.log('[NiceTry] Service worker initialized');

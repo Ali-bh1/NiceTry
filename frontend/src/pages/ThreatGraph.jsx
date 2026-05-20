@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import {
   ReactFlow, Background, Controls, MiniMap,
   useNodesState, useEdgesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Share2, RefreshCw, Loader2 } from 'lucide-react';
+import { Share2, RefreshCw, Loader2, Trash2 } from 'lucide-react';
 import { api } from '../services/api.js';
 
 const NODE_COLORS = {
@@ -66,10 +66,12 @@ function buildFlowData(graphData) {
 
 export default function ThreatGraph() {
   const [graphData, setGraphData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [domain, setDomain] = useState('');
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const loadGraph = useCallback(async () => {
     setLoading(true);
@@ -83,10 +85,28 @@ export default function ThreatGraph() {
       console.error('Graph load failed:', err);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   }, [domain, setNodes, setEdges]);
 
-  useEffect(() => { loadGraph(); }, [loadGraph]);
+  /* Load on first mount */
+  useState(() => { loadGraph(); });
+
+  async function handleClearAll() {
+    if (!confirm('Clear all threat graph nodes and edges? This cannot be undone.')) return;
+    setClearing(true);
+    try {
+      await api.clearThreatGraph();
+      setGraphData({ nodes: [], edges: [], total_nodes: 0, total_edges: 0 });
+      setNodes([]);
+      setEdges([]);
+    } catch (err) {
+      console.error('Clear failed:', err);
+      alert('Failed to clear graph: ' + err.message);
+    } finally {
+      setClearing(false);
+    }
+  }
 
   return (
     <div className="h-[calc(100vh-140px)] flex flex-col gap-4">
@@ -104,6 +124,23 @@ export default function ThreatGraph() {
         <button onClick={loadGraph} className="btn-primary flex items-center gap-2 text-sm py-2 px-4" disabled={loading}>
           {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           Refresh
+        </button>
+        <button
+          onClick={handleClearAll}
+          className="flex items-center gap-2 text-sm py-2 px-4 rounded-lg font-medium transition-all"
+          disabled={clearing || (graphData?.total_nodes === 0 && !initialLoad)}
+          style={{
+            background: 'rgba(239,68,68,0.1)',
+            color: 'var(--color-risk-danger)',
+            border: '1px solid rgba(239,68,68,0.3)',
+            cursor: clearing || (graphData?.total_nodes === 0 && !initialLoad) ? 'not-allowed' : 'pointer',
+            opacity: clearing || (graphData?.total_nodes === 0 && !initialLoad) ? 0.5 : 1,
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; }}
+        >
+          {clearing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+          Clear All
         </button>
         <div className="flex items-center gap-4 ml-auto">
           {Object.entries(NODE_COLORS).map(([type, color]) => (

@@ -1,5 +1,5 @@
 /**
- * PhishGuard — Popup Script
+ * NiceTry — Popup Script
  * 
  * Retrieves cached analysis results for the active tab
  * and renders them in the extension popup UI.
@@ -105,7 +105,7 @@ async function init() {
 
     // Skip non-http pages
     if (!tabUrl || !tabUrl.startsWith('http') || tabUrl.startsWith('chrome')) {
-      content.innerHTML = '<div class="status"><p class="status-idle">PhishGuard doesn\'t scan internal pages</p></div>';
+      content.innerHTML = '<div class="status"><p class="status-idle">NiceTry doesn\'t scan internal pages</p></div>';
       return;
     }
 

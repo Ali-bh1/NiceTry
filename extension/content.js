@@ -1,5 +1,5 @@
 /**
- * PhishGuard — Content Script
+ * NiceTry — Content Script
  * 
  * Injected into every page. Listens for high-risk warnings
  * from the background service worker and renders a full-page
@@ -16,79 +16,79 @@
     overlayVisible = true;
 
     const overlay = document.createElement('div');
-    overlay.id = 'phishguard-overlay';
+    overlay.id = 'nicetry-overlay';
 
     const riskColor = data.risk_score >= 75 ? '#ef4444' : '#f59e0b';
     const riskLabel = data.verdict === 'phishing' ? 'PHISHING DETECTED' : 'SUSPICIOUS SITE';
 
     overlay.innerHTML = `
-      <div id="phishguard-modal">
-        <div class="phishguard-header">
-          <div class="phishguard-icon">
+      <div id="nicetry-modal">
+        <div class="nicetry-header">
+          <div class="nicetry-icon">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="${riskColor}" stroke-width="2">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
               <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
           </div>
-          <h1 class="phishguard-title" style="color: ${riskColor}">⚠ ${riskLabel}</h1>
-          <p class="phishguard-subtitle">Risk Score: <strong>${data.risk_score}/100</strong></p>
+          <h1 class="nicetry-title" style="color: ${riskColor}">⚠ ${riskLabel}</h1>
+          <p class="nicetry-subtitle">Risk Score: <strong>${data.risk_score}/100</strong></p>
         </div>
 
-        <div class="phishguard-details">
-          <div class="phishguard-detail-row">
-            <span class="phishguard-label">Domain</span>
-            <span class="phishguard-value">${escapeHtml(data.domain)}</span>
+        <div class="nicetry-details">
+          <div class="nicetry-detail-row">
+            <span class="nicetry-label">Domain</span>
+            <span class="nicetry-value">${escapeHtml(data.domain)}</span>
           </div>
           ${data.threat_type ? `
-          <div class="phishguard-detail-row">
-            <span class="phishguard-label">Threat Type</span>
-            <span class="phishguard-value">${escapeHtml(data.threat_type.replace(/_/g, ' '))}</span>
+          <div class="nicetry-detail-row">
+            <span class="nicetry-label">Threat Type</span>
+            <span class="nicetry-value">${escapeHtml(data.threat_type.replace(/_/g, ' '))}</span>
           </div>` : ''}
-          <div class="phishguard-detail-row">
-            <span class="phishguard-label">Confidence</span>
-            <span class="phishguard-value">${(data.confidence * 100).toFixed(1)}%</span>
+          <div class="nicetry-detail-row">
+            <span class="nicetry-label">Confidence</span>
+            <span class="nicetry-value">${(data.confidence * 100).toFixed(1)}%</span>
           </div>
-          <div class="phishguard-detail-row">
-            <span class="phishguard-label">Recommended Action</span>
-            <span class="phishguard-value phishguard-action-${data.recommended_action}">${data.recommended_action?.toUpperCase()}</span>
+          <div class="nicetry-detail-row">
+            <span class="nicetry-label">Recommended Action</span>
+            <span class="nicetry-value nicetry-action-${data.recommended_action}">${data.recommended_action?.toUpperCase()}</span>
           </div>
         </div>
 
         ${data.ai_narrative ? `
-        <div class="phishguard-narrative">
+        <div class="nicetry-narrative">
           <p>${escapeHtml(data.ai_narrative)}</p>
         </div>` : ''}
 
-        <div class="phishguard-actions">
-          <button id="phishguard-exit" class="phishguard-btn phishguard-btn-safe">
+        <div class="nicetry-actions">
+          <button id="nicetry-exit" class="nicetry-btn nicetry-btn-safe">
             ← Exit Safely
           </button>
-          <button id="phishguard-report" class="phishguard-btn phishguard-btn-report">
+          <button id="nicetry-report" class="nicetry-btn nicetry-btn-report">
             🚩 Report Site
           </button>
-          <button id="phishguard-proceed" class="phishguard-btn phishguard-btn-danger">
+          <button id="nicetry-proceed" class="nicetry-btn nicetry-btn-danger">
             Continue (Not Recommended) →
           </button>
         </div>
 
-        <p class="phishguard-footer">Protected by PhishGuard — 7-Layer AI Detection</p>
+        <p class="nicetry-footer">Protected by NiceTry — 7-Layer AI Detection</p>
       </div>
     `;
 
     document.documentElement.appendChild(overlay);
 
     // ── Button Handlers ──
-    document.getElementById('phishguard-exit').addEventListener('click', () => {
+    document.getElementById('nicetry-exit').addEventListener('click', () => {
       window.location.href = 'about:blank';
       history.pushState(null, '', 'about:blank');
     });
 
-    document.getElementById('phishguard-proceed').addEventListener('click', () => {
+    document.getElementById('nicetry-proceed').addEventListener('click', () => {
       overlay.remove();
       overlayVisible = false;
     });
 
-    document.getElementById('phishguard-report').addEventListener('click', () => {
+    document.getElementById('nicetry-report').addEventListener('click', () => {
       chrome.runtime.sendMessage({
         type: 'REPORT_DOMAIN',
         data: {
@@ -97,7 +97,7 @@
           reporter_id: 'extension-user',
         },
       }, (response) => {
-        const reportBtn = document.getElementById('phishguard-report');
+        const reportBtn = document.getElementById('nicetry-report');
         if (response && !response.error) {
           reportBtn.textContent = '✓ Reported';
           reportBtn.disabled = true;
@@ -117,7 +117,7 @@
 
   // ── Listen for warnings from background ──
   chrome.runtime.onMessage.addListener((message) => {
-    if (message.type === 'PHISHGUARD_WARNING') {
+    if (message.type === 'NICETRY_WARNING') {
       createOverlay(message.data);
     }
   });

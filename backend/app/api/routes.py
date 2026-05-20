@@ -288,6 +288,34 @@ async def threat_graph(
     )
 
 
+# ─── DELETE /threat-graph ───────────────────────────────────────────────────
+
+@router.delete("/threat-graph")
+async def clear_threat_graph(db: AsyncSession = Depends(get_db)):
+    """
+    Delete all nodes and edges from the threat graph.
+
+    This is a destructive operation — the graph will need to be
+    repopulated by scanning URLs again.
+    """
+    from sqlalchemy import delete
+
+    edges_deleted = await db.execute(delete(ThreatEdge))
+    nodes_deleted = await db.execute(delete(ThreatNode))
+    await db.flush()
+
+    logger.info(
+        f"Threat graph cleared: {nodes_deleted.rowcount} nodes, "
+        f"{edges_deleted.rowcount} edges removed"
+    )
+
+    return {
+        "status": "cleared",
+        "nodes_deleted": nodes_deleted.rowcount,
+        "edges_deleted": edges_deleted.rowcount,
+    }
+
+
 # ─── GET /health ─────────────────────────────────────────────────────────────
 
 @router.get("/health", response_model=HealthResponse)

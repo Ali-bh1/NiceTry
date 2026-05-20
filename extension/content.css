@@ -1,6 +1,6 @@
-/* PhishGuard — Content Script Styles (Overlay) */
+/* NiceTry — Content Script Styles (Overlay) */
 
-#phishguard-overlay {
+#nicetry-overlay {
   position: fixed !important;
   inset: 0 !important;
   z-index: 2147483647 !important;
@@ -10,15 +10,15 @@
   align-items: center !important;
   justify-content: center !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
-  animation: phishguard-fade-in 0.3s ease !important;
+  animation: nicetry-fade-in 0.3s ease !important;
 }
 
-@keyframes phishguard-fade-in {
+@keyframes nicetry-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-#phishguard-modal {
+#nicetry-modal {
   background: #111827 !important;
   border: 1px solid #2a3050 !important;
   border-radius: 16px !important;
@@ -26,42 +26,42 @@
   max-width: 520px !important;
   width: 90% !important;
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6) !important;
-  animation: phishguard-slide-up 0.4s ease !important;
+  animation: nicetry-slide-up 0.4s ease !important;
 }
 
-@keyframes phishguard-slide-up {
+@keyframes nicetry-slide-up {
   from { transform: translateY(30px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-.phishguard-header {
+.nicetry-header {
   text-align: center !important;
   margin-bottom: 24px !important;
 }
 
-.phishguard-icon {
+.nicetry-icon {
   margin-bottom: 12px !important;
 }
 
-.phishguard-title {
+.nicetry-title {
   font-size: 22px !important;
   font-weight: 800 !important;
   margin: 0 0 8px 0 !important;
   letter-spacing: -0.02em !important;
 }
 
-.phishguard-subtitle {
+.nicetry-subtitle {
   font-size: 14px !important;
   color: #94a3b8 !important;
   margin: 0 !important;
 }
 
-.phishguard-subtitle strong {
+.nicetry-subtitle strong {
   color: #f1f5f9 !important;
   font-weight: 700 !important;
 }
 
-.phishguard-details {
+.nicetry-details {
   background: #0a0e1a !important;
   border: 1px solid #2a3050 !important;
   border-radius: 10px !important;
@@ -69,7 +69,7 @@
   margin-bottom: 16px !important;
 }
 
-.phishguard-detail-row {
+.nicetry-detail-row {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
@@ -77,34 +77,34 @@
   border-bottom: 1px solid #1e2540 !important;
 }
 
-.phishguard-detail-row:last-child {
+.nicetry-detail-row:last-child {
   border-bottom: none !important;
 }
 
-.phishguard-label {
+.nicetry-label {
   font-size: 12px !important;
   color: #64748b !important;
   font-weight: 500 !important;
 }
 
-.phishguard-value {
+.nicetry-value {
   font-size: 13px !important;
   color: #e2e8f0 !important;
   font-weight: 600 !important;
   font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
 }
 
-.phishguard-action-exit {
+.nicetry-action-exit {
   color: #ef4444 !important;
 }
-.phishguard-action-caution {
+.nicetry-action-caution {
   color: #f59e0b !important;
 }
-.phishguard-action-safe {
+.nicetry-action-safe {
   color: #10b981 !important;
 }
 
-.phishguard-narrative {
+.nicetry-narrative {
   background: rgba(239, 68, 68, 0.08) !important;
   border: 1px solid rgba(239, 68, 68, 0.2) !important;
   border-radius: 8px !important;
@@ -112,20 +112,20 @@
   margin-bottom: 20px !important;
 }
 
-.phishguard-narrative p {
+.nicetry-narrative p {
   font-size: 13px !important;
   line-height: 1.6 !important;
   color: #cbd5e1 !important;
   margin: 0 !important;
 }
 
-.phishguard-actions {
+.nicetry-actions {
   display: flex !important;
   gap: 10px !important;
   flex-wrap: wrap !important;
 }
 
-.phishguard-btn {
+.nicetry-btn {
   flex: 1 !important;
   padding: 12px 16px !important;
   border-radius: 8px !important;
@@ -137,40 +137,40 @@
   min-width: 140px !important;
 }
 
-.phishguard-btn:hover {
+.nicetry-btn:hover {
   transform: translateY(-1px) !important;
 }
 
-.phishguard-btn-safe {
+.nicetry-btn-safe {
   background: #10b981 !important;
   color: white !important;
 }
-.phishguard-btn-safe:hover {
+.nicetry-btn-safe:hover {
   background: #059669 !important;
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
 }
 
-.phishguard-btn-report {
+.nicetry-btn-report {
   background: transparent !important;
   border-color: #f59e0b !important;
   color: #f59e0b !important;
 }
-.phishguard-btn-report:hover {
+.nicetry-btn-report:hover {
   background: rgba(245, 158, 11, 0.1) !important;
 }
 
-.phishguard-btn-danger {
+.nicetry-btn-danger {
   background: transparent !important;
   border-color: #374151 !important;
   color: #6b7280 !important;
   font-size: 11px !important;
 }
-.phishguard-btn-danger:hover {
+.nicetry-btn-danger:hover {
   border-color: #ef4444 !important;
   color: #ef4444 !important;
 }
 
-.phishguard-footer {
+.nicetry-footer {
   text-align: center !important;
   font-size: 11px !important;
   color: #475569 !important;

@@ -1,4 +1,4 @@
-# ─── PhishGuard Routing ───
+# ─── NiceTry Routing ───
 # Serves React SPA for all non-API routes, lets Passenger handle /api/*
 
 RewriteEngine On

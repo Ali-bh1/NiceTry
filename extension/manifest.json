@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "PhishGuard — Phishing Protection",
+  "name": "NiceTry — Phishing Protection",
   "version": "1.0.0",
   "description": "Real-time phishing detection powered by a 7-layer AI analysis pipeline. Detect, Explain, Protect.",
   "permissions": [
@@ -11,7 +11,7 @@
   ],
   "host_permissions": [
     "http://localhost:8000/*",
-    "https://api.phishguard.local/*"
+    "https://api.nicetry.site/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -31,7 +31,7 @@
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     },
-    "default_title": "PhishGuard"
+    "default_title": "NiceTry"
   },
   "icons": {
     "16": "icons/icon-16.png",
