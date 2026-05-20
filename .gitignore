@@ -58,6 +58,10 @@ Desktop.ini
 # ─── Deployment Artifacts ────────────────────────────
 deployment_package/
 phishguard-deploy.zip
+nicetry-deploy.zip
+backend.zip
+public_html.zip
+extension.zip
 
 # ─── Secrets / Environment ──────────────────────────
 .env
