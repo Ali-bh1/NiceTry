@@ -62,6 +62,7 @@ nicetry-deploy.zip
 backend.zip
 public_html.zip
 extension.zip
+deploy/upload.py
 
 # ─── Secrets / Environment ──────────────────────────
 .env
