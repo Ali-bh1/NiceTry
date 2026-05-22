@@ -152,35 +152,27 @@ def _create_feature_aware_model():
     return model
 
 
-def load_model():
-    """Load the XGBoost model from disk, or create a calibrated model if not found."""
+def load_model() -> None:
     global _model, _explainer, _model_loaded
-
     model_path = Path(settings.MODEL_DIR) / settings.MODEL_FILE
 
-    # Always rebuild if the model is the old random one
-    # by checking a marker file
-    marker_path = model_path.parent / ".model_v2"
-    if model_path.exists() and marker_path.exists():
+    if model_path.exists():
         import joblib
         _model = joblib.load(model_path)
-        logger.info(f"Loaded model from {model_path}")
-    else:
-        logger.warning("Model missing or outdated. Creating feature-aware model...")
+    elif settings.AUTO_TRAIN_MODEL:
         _model = _create_feature_aware_model()
-        marker_path.write_text("v2-feature-aware")
+    else:
+        raise RuntimeError(f"Model artifact missing: {model_path}")
 
-    # Initialize SHAP explainer
-    try:
-        import shap
-        _explainer = shap.TreeExplainer(_model)
-        logger.info("SHAP TreeExplainer initialized")
-    except Exception as e:
-        logger.warning(f"SHAP initialization failed (non-critical): {e}")
-        _explainer = None
+    _explainer = None
+    if settings.ENABLE_SHAP_EXPLANATIONS:
+        try:
+            import shap
+            _explainer = shap.TreeExplainer(_model)
+        except Exception:
+            _explainer = None
 
     _model_loaded = True
-
 
 def is_model_loaded() -> bool:
     """Check if the ML model is loaded and ready for inference."""

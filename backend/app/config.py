@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     MODEL_FILE: str = "xgboost_phishing.joblib"
     DETECTION_THRESHOLD: float = 0.5
     HIGH_RISK_THRESHOLD: float = 0.75
+    AUTO_TRAIN_MODEL: bool = True  # dev-only change in prod
+    REQUIRE_MODEL_ARTIFACT: bool = True
 
     # --- Detection ---
     BRAND_SIMILARITY_THRESHOLD: float = 0.80
