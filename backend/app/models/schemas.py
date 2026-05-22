@@ -3,7 +3,7 @@ SQLAlchemy ORM models for URL analysis results, community reports, and threat gr
 """
 
 import datetime
-from sqlalchemy import Column, String, Float, Integer, DateTime, Text, JSON, Boolean
+from sqlalchemy import Column, String, Float, Integer, DateTime, Text, JSON, Boolean, UniqueConstraint
 from app.models.database import Base
 
 
@@ -81,6 +81,14 @@ class ThreatNode(Base):
 class ThreatEdge(Base):
     """Edges connecting threat graph nodes."""
     __tablename__ = "threat_edges"
+    __table_args__ = (
+        UniqueConstraint(
+            "source_id",
+            "target_id",
+            "relationship",
+            name="uq_threat_edges_src_tgt_rel",
+        ),
+    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(String(255), nullable=False, index=True)

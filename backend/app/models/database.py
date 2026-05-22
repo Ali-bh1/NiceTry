@@ -25,6 +25,13 @@ async def init_db():
     """Create all database tables on startup."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Backfill unique edge index for existing SQLite DBs so UPSERT can dedupe.
+        await conn.exec_driver_sql(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_threat_edges_src_tgt_rel
+            ON threat_edges (source_id, target_id, relationship)
+            """
+        )
 
 
 async def get_db() -> AsyncSession:

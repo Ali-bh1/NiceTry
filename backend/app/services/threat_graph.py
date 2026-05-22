@@ -13,7 +13,8 @@ import logging
 import datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.schemas import ThreatNode, ThreatEdge
@@ -29,27 +30,26 @@ async def _upsert_node(
     risk_score: int = 0,
     properties: dict | None = None,
 ) -> None:
-    """Insert a threat graph node or update its last_seen timestamp."""
-    result = await db.execute(
-        select(ThreatNode).where(ThreatNode.node_id == node_id)
+    """Insert/update a threat graph node using a single UPSERT statement."""
+    stmt = sqlite_insert(ThreatNode).values(
+        node_id=node_id,
+        node_type=node_type,
+        label=label,
+        risk_score=risk_score,
+        properties=properties or {},
     )
-    existing = result.scalar_one_or_none()
-
-    if existing:
-        existing.last_seen = datetime.datetime.utcnow()
-        existing.risk_score = max(existing.risk_score, risk_score)
-        if properties:
-            merged = {**(existing.properties or {}), **properties}
-            existing.properties = merged
-    else:
-        node = ThreatNode(
-            node_id=node_id,
-            node_type=node_type,
-            label=label,
-            risk_score=risk_score,
-            properties=properties or {},
-        )
-        db.add(node)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=[ThreatNode.node_id],
+        set_={
+            "node_type": stmt.excluded.node_type,
+            "label": stmt.excluded.label,
+            "last_seen": datetime.datetime.utcnow(),
+            "risk_score": func.max(ThreatNode.risk_score, stmt.excluded.risk_score),
+            # Keep most recent properties payload for this entity.
+            "properties": stmt.excluded.properties,
+        },
+    )
+    await db.execute(stmt)
 
 
 async def _upsert_edge(
@@ -60,25 +60,22 @@ async def _upsert_edge(
     weight: float = 1.0,
     properties: dict | None = None,
 ) -> None:
-    """Insert a threat graph edge if it doesn't already exist."""
-    result = await db.execute(
-        select(ThreatEdge).where(
-            ThreatEdge.source_id == source_id,
-            ThreatEdge.target_id == target_id,
-            ThreatEdge.relationship == relationship,
-        )
+    """Insert a threat graph edge with conflict-safe deduplication."""
+    stmt = sqlite_insert(ThreatEdge).values(
+        source_id=source_id,
+        target_id=target_id,
+        relationship=relationship,
+        weight=weight,
+        properties=properties or {},
     )
-    existing = result.scalar_one_or_none()
-
-    if not existing:
-        edge = ThreatEdge(
-            source_id=source_id,
-            target_id=target_id,
-            relationship=relationship,
-            weight=weight,
-            properties=properties or {},
-        )
-        db.add(edge)
+    stmt = stmt.on_conflict_do_nothing(
+        index_elements=[
+            ThreatEdge.source_id,
+            ThreatEdge.target_id,
+            ThreatEdge.relationship,
+        ]
+    )
+    await db.execute(stmt)
 
 
 async def populate_threat_graph(
