@@ -201,8 +201,10 @@ def predict(feature_vector: list[float]) -> dict:
 
     is_phishing = phishing_prob >= settings.DETECTION_THRESHOLD
 
-    # Generate feature importance explanations
-    top_features = _get_feature_explanations(X)
+    # Generate feature importance explanations with gated SHAP in request path.
+    use_shap = ( settings.ENABLE_SHAP_EXPLANATIONS and _explainer is not None and phishing_prob >= settings.SHAP_MIN_PHISHING_PROB)
+    
+    top_features = _get_feature_explanations( X, use_shap=use_shap, limit=settings.MAX_EXPLAINED_FEATURES,)
 
     return {
         "phishing_probability": round(phishing_prob, 4),
@@ -212,12 +214,19 @@ def predict(feature_vector: list[float]) -> dict:
     }
 
 
-def _get_feature_explanations(X: np.ndarray) -> list[dict]:
+def _get_feature_explanations(
+    X: np.ndarray,
+    use_shap: bool,
+    limit: int,
+) -> list[dict]:
     """Generate per-feature importance explanations via SHAP or feature importances."""
     top_features = []
+    top_n = max(int(limit), 0)
+    if top_n == 0:
+        return top_features
 
     # Try SHAP first
-    if _explainer is not None:
+    if use_shap and _explainer is not None:
         try:
             shap_values = _explainer.shap_values(X)
             if isinstance(shap_values, list):
@@ -234,7 +243,7 @@ def _get_feature_explanations(X: np.ndarray) -> list[dict]:
                     "value": round(abs(float(val)), 4),
                     "impact": "increases_risk" if val > 0 else "decreases_risk",
                 }
-                for name, val in feature_impacts[:7]
+                for name, val in feature_impacts[:top_n]
             ]
         except Exception as e:
             logger.warning(f"SHAP explanation failed: {e}")
@@ -250,7 +259,7 @@ def _get_feature_explanations(X: np.ndarray) -> list[dict]:
                 "value": round(float(val), 4),
                 "impact": "contributes_to_prediction",
             }
-            for name, val in feature_impacts[:7]
+            for name, val in feature_impacts[:top_n]
         ]
 
     return top_features

@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     HIGH_RISK_THRESHOLD: float = 0.75
     AUTO_TRAIN_MODEL: bool = True  # dev-only change in prod
     REQUIRE_MODEL_ARTIFACT: bool = True
+    
+    # --- Cost Optimization ---
+    ENABLE_SHAP_EXPLANATIONS: bool = False 
+    SHAP_MIN_PHISHING_PROB: float = 0.80
+    MAX_EXPLAINED_FEATURES: int = 7
+    
 
     # --- Detection ---
     BRAND_SIMILARITY_THRESHOLD: float = 0.80
