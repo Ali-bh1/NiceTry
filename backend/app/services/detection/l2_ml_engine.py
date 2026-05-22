@@ -152,35 +152,27 @@ def _create_feature_aware_model():
     return model
 
 
-def load_model():
-    """Load the XGBoost model from disk, or create a calibrated model if not found."""
+def load_model() -> None:
     global _model, _explainer, _model_loaded
-
     model_path = Path(settings.MODEL_DIR) / settings.MODEL_FILE
 
-    # Always rebuild if the model is the old random one
-    # by checking a marker file
-    marker_path = model_path.parent / ".model_v2"
-    if model_path.exists() and marker_path.exists():
+    if model_path.exists():
         import joblib
         _model = joblib.load(model_path)
-        logger.info(f"Loaded model from {model_path}")
-    else:
-        logger.warning("Model missing or outdated. Creating feature-aware model...")
+    elif settings.AUTO_TRAIN_MODEL:
         _model = _create_feature_aware_model()
-        marker_path.write_text("v2-feature-aware")
+    else:
+        raise RuntimeError(f"Model artifact missing: {model_path}")
 
-    # Initialize SHAP explainer
-    try:
-        import shap
-        _explainer = shap.TreeExplainer(_model)
-        logger.info("SHAP TreeExplainer initialized")
-    except Exception as e:
-        logger.warning(f"SHAP initialization failed (non-critical): {e}")
-        _explainer = None
+    _explainer = None
+    if settings.ENABLE_SHAP_EXPLANATIONS:
+        try:
+            import shap
+            _explainer = shap.TreeExplainer(_model)
+        except Exception:
+            _explainer = None
 
     _model_loaded = True
-
 
 def is_model_loaded() -> bool:
     """Check if the ML model is loaded and ready for inference."""
@@ -209,8 +201,10 @@ def predict(feature_vector: list[float]) -> dict:
 
     is_phishing = phishing_prob >= settings.DETECTION_THRESHOLD
 
-    # Generate feature importance explanations
-    top_features = _get_feature_explanations(X)
+    # Generate feature importance explanations with gated SHAP in request path.
+    use_shap = ( settings.ENABLE_SHAP_EXPLANATIONS and _explainer is not None and phishing_prob >= settings.SHAP_MIN_PHISHING_PROB)
+    
+    top_features = _get_feature_explanations( X, use_shap=use_shap, limit=settings.MAX_EXPLAINED_FEATURES,)
 
     return {
         "phishing_probability": round(phishing_prob, 4),
@@ -220,12 +214,19 @@ def predict(feature_vector: list[float]) -> dict:
     }
 
 
-def _get_feature_explanations(X: np.ndarray) -> list[dict]:
+def _get_feature_explanations(
+    X: np.ndarray,
+    use_shap: bool,
+    limit: int,
+) -> list[dict]:
     """Generate per-feature importance explanations via SHAP or feature importances."""
     top_features = []
+    top_n = max(int(limit), 0)
+    if top_n == 0:
+        return top_features
 
     # Try SHAP first
-    if _explainer is not None:
+    if use_shap and _explainer is not None:
         try:
             shap_values = _explainer.shap_values(X)
             if isinstance(shap_values, list):
@@ -242,7 +243,7 @@ def _get_feature_explanations(X: np.ndarray) -> list[dict]:
                     "value": round(abs(float(val)), 4),
                     "impact": "increases_risk" if val > 0 else "decreases_risk",
                 }
-                for name, val in feature_impacts[:7]
+                for name, val in feature_impacts[:top_n]
             ]
         except Exception as e:
             logger.warning(f"SHAP explanation failed: {e}")
@@ -258,7 +259,7 @@ def _get_feature_explanations(X: np.ndarray) -> list[dict]:
                 "value": round(float(val), 4),
                 "impact": "contributes_to_prediction",
             }
-            for name, val in feature_impacts[:7]
+            for name, val in feature_impacts[:top_n]
         ]
 
     return top_features
