@@ -15,7 +15,7 @@ import logging
 import time
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func
+from sqlalchemy import select, func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -178,38 +178,23 @@ async def dashboard(db: AsyncSession = Depends(get_db)):
     week_ago = now - datetime.timedelta(days=7)
     month_ago = now - datetime.timedelta(days=30)
 
-    # Total scans
-    q24 = await db.execute(
-        select(func.count()).where(URLAnalysis.analyzed_at >= day_ago)
-    )
-    q7d = await db.execute(
-        select(func.count()).where(URLAnalysis.analyzed_at >= week_ago)
-    )
-    q30d = await db.execute(
-        select(func.count()).where(URLAnalysis.analyzed_at >= month_ago)
-    )
-
-    # Phishing detected 24h
-    qp = await db.execute(
-        select(func.count()).where(
-            URLAnalysis.analyzed_at >= day_ago,
-            URLAnalysis.verdict == "phishing",
+    # Consolidated aggregate query to minimize DB round-trips.
+    aggregates = await db.execute(
+        select(
+            func.sum(case((URLAnalysis.analyzed_at >= day_ago, 1), else_=0)).label("total_scans_24h"),
+            
+            func.sum(case((URLAnalysis.analyzed_at >= week_ago, 1), else_=0)).label("total_scans_7d"),
+            
+            func.sum(case((URLAnalysis.analyzed_at >= month_ago, 1), else_=0)).label("total_scans_30d"),
+            
+            func.sum(case(((URLAnalysis.analyzed_at >= day_ago)& (URLAnalysis.verdict == "phishing"),1,),else_=0,)).label("phishing_detected_24h"),
+            
+            func.avg(case((URLAnalysis.analyzed_at >= week_ago, URLAnalysis.risk_score),else_=None,)).label("avg_risk_score"),
+            
+            func.avg(case((URLAnalysis.analyzed_at >= week_ago, URLAnalysis.latency_ms),else_=None,)).label("avg_latency_ms"),
         )
     )
-
-    # Avg risk score
-    qavg = await db.execute(
-        select(func.avg(URLAnalysis.risk_score)).where(
-            URLAnalysis.analyzed_at >= week_ago
-        )
-    )
-
-    # Avg latency
-    qlat = await db.execute(
-        select(func.avg(URLAnalysis.latency_ms)).where(
-            URLAnalysis.analyzed_at >= week_ago
-        )
-    )
+    agg = aggregates.one()
 
     # Recent incidents
     recent = await db.execute(
@@ -234,12 +219,12 @@ async def dashboard(db: AsyncSession = Depends(get_db)):
     )
 
     return DashboardStats(
-        total_scans_24h=q24.scalar() or 0,
-        total_scans_7d=q7d.scalar() or 0,
-        total_scans_30d=q30d.scalar() or 0,
-        phishing_detected_24h=qp.scalar() or 0,
-        avg_risk_score=round(qavg.scalar() or 0, 1),
-        avg_latency_ms=round(qlat.scalar() or 0, 1),
+        total_scans_24h=agg.total_scans_24h or 0,
+        total_scans_7d=agg.total_scans_7d or 0,
+        total_scans_30d=agg.total_scans_30d or 0,
+        phishing_detected_24h=agg.phishing_detected_24h or 0,
+        avg_risk_score=round(agg.avg_risk_score or 0, 1),
+        avg_latency_ms=round(agg.avg_latency_ms or 0, 1),
         recent_incidents=incidents,
         pending_reports=qpr.scalar() or 0,
     )
