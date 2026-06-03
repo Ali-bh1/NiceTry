@@ -1,0 +1,57 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: phishing_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-phishing_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-phishing}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-phishing_secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-phishing} -d ${POSTGRES_DB:-phishing_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: phishing_backend
+    restart: unless-stopped
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-phishing}:${POSTGRES_PASSWORD:-phishing_secret}@db:5432/${POSTGRES_DB:-phishing_dev}
+      DEBUG: "true"
+      APP_NAME: "Phishing Detection Platform"
+      APP_VERSION: "2.0.0"
+      API_PREFIX: "/api/v1"
+      HOST: "0.0.0.0"
+      PORT: "8000"
+      DETECTION_THRESHOLD: "0.5"
+      HIGH_RISK_THRESHOLD: "0.75"
+      BRAND_SIMILARITY_THRESHOLD: "0.80"
+      RATE_LIMIT_PER_MINUTE: "60"
+      AI_PROVIDER: "template"
+      OPENAI_API_KEY: ""
+      GEMINI_API_KEY: ""
+      # CORS — add your frontend dev port here
+      CORS_ORIGINS: '["http://localhost:5173","http://localhost:3000","http://127.0.0.1:5173"]'
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount source so --reload picks up changes without rebuild
+      - ./backend:/app
+      - ml_models:/app/ml/models
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  ml_models:
