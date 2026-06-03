@@ -1,5 +1,7 @@
 """
-Database setup using SQLAlchemy async engine with SQLite.
+Database setup using SQLAlchemy async engine.
+Supports both SQLite (aiosqlite) for local dev and PostgreSQL (asyncpg) for production.
+The DATABASE_URL env var controls which backend is used.
 """
 
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -21,17 +23,24 @@ class Base(DeclarativeBase):
     pass
 
 
+def _is_sqlite() -> bool:
+    return settings.DATABASE_URL.startswith("sqlite")
+
+
 async def init_db():
     """Create all database tables on startup."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        # Backfill unique edge index for existing SQLite DBs so UPSERT can dedupe.
-        await conn.exec_driver_sql(
-            """
-            CREATE UNIQUE INDEX IF NOT EXISTS uq_threat_edges_src_tgt_rel
-            ON threat_edges (source_id, target_id, relationship)
-            """
-        )
+        # The UniqueConstraint on ThreatEdge is declared in the ORM model and
+        # handled by create_all on PostgreSQL.
+        # For legacy SQLite DBs (local dev without Docker) we backfill it manually.
+        if _is_sqlite():
+            await conn.exec_driver_sql(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS uq_threat_edges_src_tgt_rel
+                ON threat_edges (source_id, target_id, relationship)
+                """
+            )
 
 
 async def get_db() -> AsyncSession:
