@@ -1,119 +1,110 @@
-import { useState } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
-import { Shield, Search, Share2, Flag, LayoutDashboard, Menu, X, Home } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Search, Share2, Flag, LayoutDashboard, X, Menu } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { to: '/', icon: Home, label: 'Home' },
-  { to: '/scan', icon: Search, label: 'URL Scanner' },
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Admin Dashboard' },
-  { to: '/graph', icon: Share2, label: 'Threat Graph' },
-  { to: '/reports', icon: Flag, label: 'Reports' },
+  { to: '/scan',      icon: Search,         label: 'Scanner'   },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/graph',     icon: Share2,          label: 'Graph'     },
+  { to: '/reports',   icon: Flag,            label: 'Reports'   },
 ];
 
-function SidebarContent({ setOpen, mobile }) {
-  return (
-    <>
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '20px 20px 18px', borderBottom: '1px solid #e5e5e5',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '28px', height: '28px', background: '#111', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Shield size={15} color="#fff" />
-          </div>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: '14px', color: '#111' }}>NiceTry</div>
-            <div style={{ fontSize: '11px', color: '#999' }}>Detect · Protect</div>
-          </div>
-        </div>
-        {mobile && (
-          <button onClick={() => setOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#999' }}>
-            <X size={18} />
-          </button>
-        )}
-      </div>
+export default function Layout() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
-      <nav style={{ padding: '12px 10px', flex: 1 }}>
-        {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
-          <NavLink key={to} to={to} end={to === '/'}
-            onClick={() => setOpen(false)}
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
+
+      {/* ── Top navbar — same grid style as HeroNav ── */}
+      <nav style={{
+        position: 'fixed',
+        top: 0, left: 0, right: 0,
+        zIndex: 500,
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr repeat(4, auto) auto',
+        borderBottom: '1px solid rgba(255,255,255,0.25)',
+        background: scrolled ? 'rgba(10,10,10,0.96)' : '#0a0a0a',
+        backdropFilter: scrolled ? 'blur(20px)' : 'none',
+        transition: 'background .3s, backdrop-filter .3s',
+      }}>
+
+        {/* Logo — NICETRY, click goes home */}
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            display: 'flex', alignItems: 'center',
+            padding: '18px 28px',
+            background: 'none', border: 'none',
+            borderRight: '1px solid rgba(255,255,255,0.25)',
+            cursor: 'pointer',
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: '18px',
+            fontWeight: 800,
+            color: '#ff5500',
+            letterSpacing: '.16em',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          NICETRY
+        </button>
+
+        {/* Spacer */}
+        <div style={{ borderRight: '1px solid rgba(255,255,255,0.25)' }} />
+
+        {/* Nav links */}
+        {NAV_ITEMS.map(({ to, label }) => (
+          <NavLink
+            key={to}
+            to={to}
             style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '9px 12px', borderRadius: '7px', marginBottom: '2px',
-              textDecoration: 'none', fontSize: '14px',
-              background: isActive ? '#f5f5f5' : 'transparent',
-              color: isActive ? '#111' : '#666',
-              fontWeight: isActive ? 500 : 400,
+              display: 'flex',
+              alignItems: 'center',
+              padding: '20px 28px',
+              borderRight: '1px solid rgba(255,255,255,0.25)',
+              textDecoration: 'none',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '12px',
+              letterSpacing: '.10em',
+              textTransform: 'uppercase',
+              color: isActive ? '#ff5500' : 'rgba(255,255,255,0.72)',
+              borderBottom: isActive ? '2px solid #ff5500' : '2px solid transparent',
+              marginBottom: '-1px',
+              transition: 'color .2s',
+              whiteSpace: 'nowrap',
             })}
           >
-            <Icon size={16} />
             {label}
           </NavLink>
         ))}
+
+        {/* Status dot */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '8px',
+          padding: '18px 24px',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '11px',
+          color: 'rgba(255,255,255,0.40)',
+        }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', display: 'inline-block', flexShrink: 0 }} />
+          <span>Online</span>
+        </div>
+
       </nav>
 
-      <div style={{ padding: '14px 16px', borderTop: '1px solid #e5e5e5' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-          <span style={{ fontSize: '12px', color: '#999' }}>System Online</span>
-          <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#ccc' }}>v2.0</span>
-        </div>
+      {/* Content — offset by navbar height (~60px) */}
+      <div style={{ paddingTop: '61px', minHeight: '100vh' }}>
+        <Outlet />
       </div>
-    </>
-  );
-}
 
-export default function Layout() {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#fff' }}>
-
-      {/* Desktop sidebar */}
-      <aside style={{
-        width: '220px', flexShrink: 0, borderRight: '1px solid #e5e5e5',
-        display: 'flex', flexDirection: 'column',
-        position: 'sticky', top: 0, height: '100vh',
-      }}>
-        <SidebarContent setOpen={setOpen} />
-      </aside>
-
-      {/* Mobile overlay */}
-      {open && (
-        <>
-          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 40 }} />
-          <aside style={{
-            width: '220px', borderRight: '1px solid #e5e5e5',
-            display: 'flex', flexDirection: 'column',
-            position: 'fixed', inset: '0 auto 0 0', zIndex: 50, background: '#fff',
-          }}>
-            <SidebarContent setOpen={setOpen} mobile />
-          </aside>
-        </>
-      )}
-
-      {/* Content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Mobile topbar */}
-        {/* <div style={{
-          display: 'flex', alignItems: 'center', gap: '12px',
-          padding: '14px 20px', borderBottom: '1px solid #e5e5e5',
-        }} className="lg:hidden">
-          <button onClick={() => setOpen(true)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#555' }}>
-            <Menu size={20} />
-          </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-            <div style={{ width: '24px', height: '24px', background: '#111', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Shield size={13} color="#fff" />
-            </div>
-            <span style={{ fontWeight: 600, fontSize: '14px' }}>NiceTry</span>
-          </div>
-        </div> */}
-
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          <Outlet />
-        </div>
-      </div>
     </div>
   );
 }
