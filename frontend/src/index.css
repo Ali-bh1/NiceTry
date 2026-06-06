@@ -3,23 +3,24 @@
 * { box-sizing: border-box; }
 
 body {
-  background: #ffffff;
-  color: #111;
+  background: #0a0a0a;
+  color: #f0f0f0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #f5f5f5; }
-::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #ff5500; }
 
 .card {
-  background: #fff;
-  border: 1px solid #e5e5e5;
-  border-radius: 10px;
+  background: #141414;
+  border: 1px solid #222;
+  border-radius: 8px;
 }
 
-.badge-safe { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-.badge-suspicious { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-.badge-phishing { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.badge-safe       { background: rgba(34,197,94,0.1);  color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+.badge-suspicious { background: rgba(255,85,0,0.1);   color: #ff7733; border: 1px solid rgba(255,85,0,0.25); }
+.badge-phishing   { background: rgba(220,38,38,0.1);  color: #f87171; border: 1px solid rgba(220,38,38,0.25); }

@@ -205,12 +205,12 @@ export default function ThreatGraph() {
 function ComingSoon({ title, description }) {
   return (
     <div style={{ maxWidth: '600px', margin: '120px auto', padding: '0 32px', textAlign: 'center' }}>
-      <div style={{ fontSize: '12px', color: '#aaa', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '16px' }}>
+      <div style={{ fontSize: '11px', color: '#ff5500', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px', fontFamily: 'monospace' }}>
         Coming soon
       </div>
-      <h1 style={{ fontSize: '28px', fontWeight: 600, letterSpacing: '-0.5px', color: '#111', marginBottom: '14px' }}>{title}</h1>
-      <p style={{ fontSize: '15px', color: '#888', lineHeight: 1.7 }}>{description}</p>
-      <div style={{ marginTop: '32px', width: '40px', height: '2px', background: '#e5e5e5', margin: '32px auto 0' }} />
+      <h1 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: '#f0f0f0', marginBottom: '14px' }}>{title}</h1>
+      <p style={{ fontSize: '15px', color: '#555', lineHeight: 1.75 }}>{description}</p>
+      <div style={{ width: '40px', height: '2px', background: '#ff5500', margin: '32px auto 0', opacity: 0.5 }} />
     </div>
   );
 }
